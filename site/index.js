@@ -5,7 +5,7 @@ fetch(`http://${serverLocation}:8081/`).then(x => console.log(x))
 const socket = new WebSocket(`ws://${serverLocation}:8081/wsapp/debugger`)
 
 socket.addEventListener("open", event => {
-  socket.send("hello server")
+  socket.send("start")
 })
 
 socket.addEventListener('message', event => {

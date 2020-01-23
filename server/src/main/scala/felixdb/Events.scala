@@ -3,10 +3,11 @@ package felixdb
 import com.sun.jdi._
 import com.sun.jdi.event._
 import collection.JavaConverters._
+import java.util.concurrent.LinkedBlockingQueue
 
 final case class Breakpoint(lineNumber: Int)
 
-class Events(vm: VirtualMachine, breakpoints: List[Breakpoint]) {
+class Events(vm: VirtualMachine, breakpoints: List[Breakpoint], messages: LinkedBlockingQueue[String]) {
 
   lazy val eventRequestManager = vm.eventRequestManager()
 
@@ -31,9 +32,9 @@ class Events(vm: VirtualMachine, breakpoints: List[Breakpoint]) {
   def displayVaribles(locatable: LocatableEvent): Unit = {
     val stackFrame = locatable.thread.frame(0)
     val visibleValues = stackFrame.getValues(stackFrame.visibleVariables()).asScala
-    println(s"visible at ${stackFrame.location}:")
+    messages.add(s"visible at ${stackFrame.location}:")
     visibleValues.foreach { case (varible, value) =>
-      println(s"${varible.name} ==> ${value}")
+      messages.add(s"${varible.name} ==> ${value}")
     }
   }
 
