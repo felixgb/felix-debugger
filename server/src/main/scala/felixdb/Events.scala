@@ -7,13 +7,17 @@ import java.util.concurrent.LinkedBlockingQueue
 
 final case class Breakpoint(lineNumber: Int)
 
-class Events(vm: VirtualMachine, breakpoints: List[Breakpoint], messages: LinkedBlockingQueue[String]) {
+class Events(
+  vm: VirtualMachine,
+  breakpoints: List[Breakpoint],
+  messages: LinkedBlockingQueue[DebugMessage]
+) {
 
   lazy val eventRequestManager = vm.eventRequestManager()
 
   def enableClassPrepareEvents(): Unit = {
     val cpr = eventRequestManager.createClassPrepareRequest()
-    cpr.addSourceNameFilter("*MainSpec.scala")
+    cpr.addSourceNameFilter("*Answer.scala")
     cpr.enable()
   }
 
@@ -21,9 +25,11 @@ class Events(vm: VirtualMachine, breakpoints: List[Breakpoint], messages: Linked
     classPrepareEvent.referenceType() match {
       case classType: ClassType =>
         breakpoints.foreach { bp =>
-          classType.locationsOfLine(bp.lineNumber).asScala match {
-            case Seq(location) =>
+          classType.locationsOfLine(bp.lineNumber).asScala.headOption match {
+            case Some(location) =>
               eventRequestManager.createBreakpointRequest(location).enable()
+            case None =>
+              println("bad!")
           }
         }
       case unknown => throw new Exception(s"unknown type: ${unknown}")
@@ -32,9 +38,15 @@ class Events(vm: VirtualMachine, breakpoints: List[Breakpoint], messages: Linked
   def displayVaribles(locatable: LocatableEvent): Unit = {
     val stackFrame = locatable.thread.frame(0)
     val visibleValues = stackFrame.getValues(stackFrame.visibleVariables()).asScala
-    messages.add(s"visible at ${stackFrame.location}:")
+
     visibleValues.foreach { case (varible, value) =>
-      messages.add(s"${varible.name} ==> ${value}")
+      messages.add(
+        DebugMessage.Varible(
+          varible.name,
+          varible.`type`.name,
+          value.toString
+        )
+      )
     }
   }
 
@@ -56,6 +68,7 @@ class Events(vm: VirtualMachine, breakpoints: List[Breakpoint], messages: Linked
       } {
         event match {
           case cpe: ClassPrepareEvent =>
+            println(cpe.referenceType.name)
             setBreakpoints(cpe)
           case bpe: BreakpointEvent =>
             displayVaribles(bpe)

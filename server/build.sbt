@@ -1,5 +1,4 @@
 name := "felix-debugger"
-organization := "com.iqvia.rwas.omop"
 
 enablePlugins(UniversalPlugin)
 enablePlugins(JavaAppPackaging)
@@ -22,29 +21,17 @@ scalacOptions in (Compile, console) --= Seq(
   "-Xfatal-warnings"
 )
 
-val akkaHttpVersion = "10.0.6"
-val akkaVersion = "2.5.1"
-val sparkVersion = "2.4.4"
 val scalaTestVersion = "3.0.5"
 
 libraryDependencies ++= Seq(
-  "org.apache.spark" %% "spark-sql" % sparkVersion,
   "com.lihaoyi" %% "cask" % "0.2.9",
-
-  "com.pauldijou" %% "jwt-core" % "0.14.1",
+  "com.lihaoyi" %% "upickle" % "0.9.5",
 
   "com.github.pureconfig" %% "pureconfig" % "0.12.1",
 
   "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
 
-  "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % Test,
-  "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
-  "com.iqvia.rwas.omop" %% "omop-akka-http-docroutes" % "0.0.4" % Test
+  "org.scalatest" %% "scalatest" % scalaTestVersion % Test
 )
-
-fork in Test := true
-
-resolvers += Resolver.mavenLocal
-resolvers += "RWAS DEV Local" at "http://rwes-artifactory01.internal.imsglobal.com/artifactory/maven-dev-local"
 
 scalastyleConfig := file("project/scalastyle_config.xml")

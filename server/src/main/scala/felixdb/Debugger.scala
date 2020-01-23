@@ -1,10 +1,11 @@
 package felixdb
 
 import java.util.concurrent.LinkedBlockingQueue
+import upickle.default.write
 
 object DebuggerServer extends cask.MainRoutes {
 
-  val messages = new LinkedBlockingQueue[String]()
+  val messages = new LinkedBlockingQueue[DebugMessage]()
 
   @cask.websocket("/debugger")
   def debugger(): cask.WebsocketResult =
@@ -13,7 +14,7 @@ object DebuggerServer extends cask.MainRoutes {
         case cask.Ws.Text("start") =>
           while (true) {
             val msg = messages.take()
-            channel.send(cask.Ws.Text(msg))
+            channel.send(cask.Ws.Text(write(msg)))
           }
       }
     }
@@ -23,7 +24,7 @@ object DebuggerServer extends cask.MainRoutes {
       while (true) {
         val connector = Connector.findAttachingConnector()
         val vm = Connector.attach(connector)
-        val bp = Breakpoint(33)
+        val bp = Breakpoint(67)
         new Events(vm, List(bp), messages).start()
       }
   }

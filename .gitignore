@@ -1,3 +1,5 @@
 *.class
 *.log
-server/target/
+**/target/
+**/.bloop/
+**/.metals/
