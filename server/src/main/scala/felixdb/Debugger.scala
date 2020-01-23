@@ -1,6 +1,15 @@
 package felixdb
 
-object Debugger extends App {
+object DebuggerServer extends cask.MainRoutes {
+
+  @cask.websocket("/debugger")
+  def debugger(): cask.WebsocketResult =
+    cask.WsHandler { channel =>
+      cask.WsActor {
+        case cask.Ws.Text(txt) =>
+          channel.send(cask.Ws.Text("this is a thing"))
+      }
+    }
 
   val debugThread = new Thread {
     override def run(): Unit =
@@ -14,21 +23,6 @@ object Debugger extends App {
 
   debugThread.start()
 
-  VisualizeServer.start()
-
-}
-
-object VisualizeServer extends cask.MainRoutes {
-
-  @cask.websocket("/debugger")
-  def debugger(): cask.WebsocketResult =
-    cask.WsHandler { channel =>
-      cask.WsActor {
-        case cask.Ws.Text(txt) =>
-          channel.send(cask.Ws.Text("hello"))
-      }
-    }
-
-  def start(): Unit = initialize()
+  initialize()
 
 }
